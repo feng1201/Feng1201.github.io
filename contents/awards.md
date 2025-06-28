@@ -1,13 +1,3 @@
-- National Scholarship of Graduate Student, 2024.
+- National College Students' Innovation and Entrepreneurship Training Program Project: "Meat Quality Judge - A Real- time Meat Quality Analysis System Based on Machine Olfaction" (The only project from the university awarded the exclusive right to participate in the annual university conference).
 
-- First-prize Scholarship of CUMT, 2024.
-
-- First-prize Scholarship of CUMT, 2023.
-
-- Freshman Scholarship of CUMT, 2022.
-
-- Excellent Graduation Project of Jiangsu Province, 2022.
-
-- First-prize Enterprise Scholarship of CUMT, 2020.
-
-- First-prize Scholarship of CUMT, 2019.
+- China Southern Power Grid 2024 Smart Metering Ecosystem Development Competition.

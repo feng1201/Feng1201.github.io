@@ -8,9 +8,9 @@ He is currently pursuing a Master's Degree in Computer Science, at School of Com
 sli[at]cumt.edu.cn
 
 #### Education
-M.E., Computer Science and Technology, China University of Mining and Technology, 2022—2025 (expected).\
-B.E., Data Science and Big Data Technology, China University of Mining and Technology, 2018—2022.
+M.E., Bachelor's Degree in Measurement and Control Technology And Instruments, China University of Mining and Technology, 2022—2025 (expected).\
+B.E., Bachelor's Degree in Measurement and Control Technology And Instruments, Northeast Electric Power University, 2020—2024.
 
 #### Research Interests
-Deep Learning, Artificial Intelligence Seismology, Mine Microseismic.
+Deep Learning, Time Series, Trustworthy AI.
 
