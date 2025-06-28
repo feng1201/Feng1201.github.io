@@ -1,5 +1,5 @@
 
-He is currently pursuing a Master's Degree in Computer Science, at School of Computer Science and Technology, China University of Mining and Technology, China.
+During his undergraduate studies, he joined a bionic sensing & pattern-recognition laboratory, and he is now a research assistant at the Hong Kong University of Science and Technology (Guangzhou).
 
 #### Email
 ninghuifeng[at]hkust-gz.edu.cn/feng65501[at]gmail.com
