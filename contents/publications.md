@@ -4,4 +4,4 @@
 
 - <strong>Ninghui Feng*</strong>, Songning Lai*, Xin Zhou, Jiayu Yang, <em>et al.</em> Towards Reliable Time-Series Forecasting under Future Uncertainty: Ambiguity and Novelty Rejection Mechanisms. <a href="https://arxiv.org/abs/2503.19656">arXiv:2503.19656</a>  
 
-- <strong>Ninghui Feng*</strong>, Songning Lai*, Fobao Zhou, <em>et al.</em> TimeSieve: Extracting Temporal Dynamics through Information Bottleneck. <a href="https://arxiv.org/abs/2406.05036">arXiv:2406.05036</a>
+- <strong>Ninghui Feng*</strong>, Songning Lai*, Fobao Zhou, Zhenxiao Yin,<em>et al.</em> TimeSieve: Extracting Temporal Dynamics through Information Bottleneck. <a href="https://arxiv.org/abs/2406.05036">arXiv:2406.05036</a>
