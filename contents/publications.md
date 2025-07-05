@@ -1,4 +1,4 @@
-- <strong>Ninghui Feng*</strong>, Songning Lai*, Jiechao Gao, Hao Wang, <em>et al.</em> From Guesswork to Guarantee: Towards Faithful Multimedia Web Forecasting with TimeSieve. <strong>ACM MM(CCF A)</strong>  
+- <strong>Ninghui Feng*</strong>, Songning Lai*, Jiechao Gao, Hao Wang, <em>et al.</em> From Guesswork to Guarantee: Towards Faithful Multimedia Web Forecasting with TimeSieve. <strong>ACM Multimedia 2025(CCF A)</strong>  
 
 - <strong>Ninghui Feng</strong>, Siyuan Kang, Chongbo Yin, Ziyang Li, <em>et al.</em> Determination of Tea Quality: A Separate Domain Graph Convolution Network Combined With an Electronic Nose. <strong>IEEE Sensors Journal (JCR Q1)</strong>  
 
