@@ -9,6 +9,6 @@ B.E., Bachelor's Degree in Measurement and Control Technology And Instruments, N
 #### Research Interests
 Trustworthy AI, LLM, Time Series.
 
-**The road is tough and endless, one must venture and DeepSeek.**  
-**路漫漫其修远兮，吾将上下而求索** – Yuan Qu (屈原) inspired by Yuliang Xiu
+**_The road is tough and endless, one must venture and DeepSeek._**  
+**_路漫漫其修远兮，吾将上下而求索_** – Yuan Qu (屈原) inspired by Yuliang Xiu
 
