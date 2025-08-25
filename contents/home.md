@@ -1,5 +1,5 @@
 
-I first gained research experience as an undergraduate in a bionic sensing and pattern-recognition laboratory, and I am now working as an intern at IDEA (International Digital Economy Academy ).
+I first gained research experience as an undergraduate in a bionic sensing and pattern-recognition laboratory, and I am now working as an intern at IDEA (International Digital Economy Academy).
 
 #### Email
 feng65501[at]gmail.com
