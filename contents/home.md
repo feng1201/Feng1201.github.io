@@ -5,7 +5,8 @@ I first gained research experience as an undergraduate in a bionic sensing and p
 feng65501[at]gmail.com
 #### Education
 B.E., Bachelor's Degree in Measurement and Control Technology And Instruments, Northeast Electric Power University, 2020—2024, GPA 3.27.
-MRes, Master of Research in Electrical Engineering, University of Nottingham Ningbo China, 2025-2026
+
+MRes, Master of Research in Electrical Engineering, University of Nottingham Ningbo China, 2025-2026.
 #### Research Interests
 Trustworthy AI, MLLM, Time Series.
 
