@@ -11,5 +11,5 @@ MRes, Master of Research in Electrical Engineering, University of Nottingham Nin
 Trustworthy AI, MLLM, Time Series.
 
 **_The road is tough and endless, one must venture and DeepSeek._**  
-**_路漫漫其修远兮，吾将上下而求索_** – Yuan Qu (屈原) inspired by Yuliang Xiu
+**_路漫漫其修远兮，吾将上下而求索_** – Yuan Qu (屈原) Thanks to Xiu Yuliang for the witty remark :)
 
