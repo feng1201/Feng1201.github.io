@@ -1,65 +1,63 @@
+const header = document.querySelector("[data-header]");
+const menuButton = document.querySelector("[data-menu-button]");
+const menu = document.querySelector("[data-menu]");
+const menuLinks = menu ? [...menu.querySelectorAll('a[href^="#"]')] : [];
+const sections = [...document.querySelectorAll("main section[id]")];
+const year = document.querySelector("[data-year]");
 
+function setHeaderState() {
+    if (header) {
+        header.classList.toggle("scrolled", window.scrollY > 12);
+    }
+}
 
-const content_dir = 'contents/'
-const config_file = 'config.yml'
-const section_names = ['home', 'publications', 'awards']
+function closeMenu() {
+    if (!menu || !menuButton) return;
+    menu.classList.remove("open");
+    menuButton.setAttribute("aria-expanded", "false");
+    document.body.classList.remove("menu-open");
+}
 
-
-window.addEventListener('DOMContentLoaded', event => {
-
-    // Activate Bootstrap scrollspy on the main nav element
-    const mainNav = document.body.querySelector('#mainNav');
-    if (mainNav) {
-        new bootstrap.ScrollSpy(document.body, {
-            target: '#mainNav',
-            offset: 74,
-        });
-    };
-
-    // Collapse responsive navbar when toggler is visible
-    const navbarToggler = document.body.querySelector('.navbar-toggler');
-    const responsiveNavItems = [].slice.call(
-        document.querySelectorAll('#navbarResponsive .nav-link')
-    );
-    responsiveNavItems.map(function (responsiveNavItem) {
-        responsiveNavItem.addEventListener('click', () => {
-            if (window.getComputedStyle(navbarToggler).display !== 'none') {
-                navbarToggler.click();
-            }
-        });
+if (menuButton && menu) {
+    menuButton.addEventListener("click", () => {
+        const willOpen = menuButton.getAttribute("aria-expanded") !== "true";
+        menu.classList.toggle("open", willOpen);
+        menuButton.setAttribute("aria-expanded", String(willOpen));
+        document.body.classList.toggle("menu-open", willOpen);
     });
 
+    menuLinks.forEach((link) => link.addEventListener("click", closeMenu));
 
-    // Yaml
-    fetch(content_dir + config_file)
-        .then(response => response.text())
-        .then(text => {
-            const yml = jsyaml.load(text);
-            Object.keys(yml).forEach(key => {
-                try {
-                    document.getElementById(key).innerHTML = yml[key];
-                } catch {
-                    console.log("Unknown id and value: " + key + "," + yml[key].toString())
-                }
+    window.addEventListener("resize", () => {
+        if (window.innerWidth > 760) closeMenu();
+    });
+}
 
-            })
-        })
-        .catch(error => console.log(error));
+if ("IntersectionObserver" in window && menuLinks.length && sections.length) {
+    const sectionObserver = new IntersectionObserver(
+        (entries) => {
+            const visibleEntry = entries
+                .filter((entry) => entry.isIntersecting)
+                .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
 
+            if (!visibleEntry) return;
 
-    // Marked
-    marked.use({ mangle: false, headerIds: false })
-    section_names.forEach((name, idx) => {
-        fetch(content_dir + name + '.md')
-            .then(response => response.text())
-            .then(markdown => {
-                const html = marked.parse(markdown);
-                document.getElementById(name + '-md').innerHTML = html;
-            }).then(() => {
-                // MathJax
-                MathJax.typeset();
-            })
-            .catch(error => console.log(error));
-    })
+            menuLinks.forEach((link) => {
+                link.classList.toggle("active", link.getAttribute("href") === `#${visibleEntry.target.id}`);
+            });
+        },
+        {
+            rootMargin: "-20% 0px -65% 0px",
+            threshold: [0.05, 0.25, 0.5],
+        }
+    );
 
-}); 
+    sections.forEach((section) => sectionObserver.observe(section));
+}
+
+if (year) {
+    year.textContent = String(new Date().getFullYear());
+}
+
+setHeaderState();
+window.addEventListener("scroll", setHeaderState, { passive: true });
