@@ -141,19 +141,28 @@ a:hover {
     display: block;
 }
 
+.profile-photo {
+    width: 176px;
+    margin: 0 0 1rem;
+}
+
 .avatar {
-    width: 104px;
-    height: 104px;
-    display: grid;
-    place-items: center;
-    margin-bottom: 1rem;
+    width: 156px;
+    height: 156px;
+    display: block;
     background: #f5f7f8;
     border: 1px solid #d9dee1;
     border-radius: 50%;
-    color: #59646a;
-    font-family: var(--serif);
-    font-size: 1.85rem;
-    letter-spacing: 0.03em;
+    object-fit: cover;
+    object-position: 53% 54%;
+}
+
+.profile-photo figcaption {
+    max-width: 170px;
+    margin-top: 0.55rem;
+    color: #858c90;
+    font-size: 0.67rem;
+    line-height: 1.45;
 }
 
 .profile h1 {
@@ -394,6 +403,34 @@ a:hover {
     font-size: 0.83rem;
 }
 
+.travel-gallery {
+    display: grid;
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.75fr);
+    align-items: start;
+    gap: 1rem;
+    margin-top: 1.6rem;
+}
+
+.travel-gallery figure {
+    margin: 0;
+    overflow: hidden;
+    background: #fafafa;
+    border: 1px solid var(--line-strong);
+}
+
+.travel-gallery img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.travel-gallery figcaption {
+    padding: 0.65rem 0.75rem;
+    color: var(--muted);
+    font-size: 0.72rem;
+    line-height: 1.4;
+}
+
 .site-footer {
     padding: 2.2rem 1.5rem;
     border-top: 1px solid var(--line);
@@ -431,17 +468,26 @@ a:hover {
     }
 
     .profile-heading {
-        display: flex;
+        display: grid;
+        grid-template-columns: 112px minmax(0, 1fr);
         align-items: flex-start;
         gap: 1rem;
     }
 
-    .avatar {
-        width: 62px;
-        height: 62px;
+    .profile-photo {
+        width: 112px;
         margin: 0;
-        flex: none;
-        font-size: 1.1rem;
+    }
+
+    .avatar {
+        width: 82px;
+        height: 82px;
+    }
+
+    .profile-photo figcaption {
+        width: 112px;
+        margin-top: 0.4rem;
+        font-size: 0.6rem;
     }
 
     .profile h1 {
@@ -600,6 +646,10 @@ a:hover {
     .education-list article {
         grid-template-columns: 1fr;
         gap: 0.3rem;
+    }
+
+    .travel-gallery {
+        grid-template-columns: 1fr;
     }
 
     .menu-label {
