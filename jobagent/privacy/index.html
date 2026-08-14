@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="JobAgent privacy policy: how resume data, recruitment form content, and extension data are collected, used, and protected.">
+    <meta name="author" content="Ninghui Feng">
+    <meta name="theme-color" content="#ffffff">
+
+    <title>JobAgent Privacy Policy · Ninghui Feng</title>
+    <link rel="canonical" href="https://feng1201.github.io/jobagent/privacy/">
+    <link rel="icon" type="image/x-icon" href="../../static/assets/favicon.ico">
+    <link rel="stylesheet" href="../../static/css/main.css">
+    <link rel="stylesheet" href="../../static/css/privacy.css">
+</head>
+
+<body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="site-header">
+        <div class="masthead legal-masthead">
+            <a class="site-brand" href="../../" aria-label="Return to Ninghui Feng's homepage">
+                <span class="brand-mark" aria-hidden="true">NF</span>
+                <span>Ninghui Feng's Homepage</span>
+            </a>
+            <a class="back-link" href="../../">Back to homepage</a>
+        </div>
+    </header>
+
+    <main class="legal-layout" id="main">
+        <header class="legal-hero">
+            <p class="legal-kicker">JOBAGENT · PRIVACY</p>
+            <h1>Privacy Policy</h1>
+            <p class="legal-summary">
+                JobAgent helps people reuse information they have chosen to save when completing recruitment application forms. The extension works only after the user starts it and stops before final submission so the user can review every answer.
+            </p>
+            <dl class="policy-meta">
+                <div>
+                    <dt>Effective date</dt>
+                    <dd>August 14, 2026</dd>
+                </div>
+                <div>
+                    <dt>Operator</dt>
+                    <dd>Ninghui Feng</dd>
+                </div>
+                <div>
+                    <dt>Contact</dt>
+                    <dd><a href="mailto:feng65501@gmail.com">feng65501@gmail.com</a></dd>
+                </div>
+            </dl>
+        </header>
+
+        <article class="policy-content">
+            <section aria-labelledby="scope-title">
+                <h2 id="scope-title">1. Scope and purpose</h2>
+                <p>
+                    This policy explains how the JobAgent browser extension and its companion service collect, use, store, and share information. JobAgent has one purpose: to use job-search information supplied by the user to identify and fill fields on the recruitment page the user has opened, while leaving uncertain answers and the final submission to the user.
+                </p>
+            </section>
+
+            <section aria-labelledby="data-title">
+                <h2 id="data-title">2. Information we handle</h2>
+                <ul>
+                    <li><strong>Personally identifiable information:</strong> resume files and information the user uploads or enters, such as name, email address, phone number, city, education, employment, projects, research, skills, and custom job-application fields.</li>
+                    <li><strong>Authentication information:</strong> the invitation code used to access an account and the session token used to keep the extension signed in. The server stores only a hash of the session token.</li>
+                    <li><strong>Location-related network information:</strong> the IP address needed for login rate limiting, abuse prevention, and basic service security. JobAgent does not request GPS or precise device location.</li>
+                    <li><strong>Web history for the active task:</strong> the URL and title of the recruitment page on which the user starts JobAgent. JobAgent does not collect an unrelated list of pages visited.</li>
+                    <li><strong>Website content:</strong> form labels, field types, available options, nearby instructions, section headings, and existing field state needed to understand and complete the active application form.</li>
+                    <li><strong>Field memory:</strong> non-sensitive custom answers the user chooses to reuse and structural information that helps recognize similar fields on later applications.</li>
+                    <li><strong>Operational information:</strong> request time, request path, response status, network address, and other limited records required to maintain and secure the service.</li>
+                </ul>
+                <p>
+                    JobAgent is designed not to process passwords, one-time verification codes, payment-card or bank-account fields, government identity-document fields, electronic signatures, consent declarations, or final submission actions.
+                </p>
+            </section>
+
+            <section aria-labelledby="use-title">
+                <h2 id="use-title">3. How information is used</h2>
+                <p>We use the information above only to:</p>
+                <ul>
+                    <li>authenticate the user and provide the associated JobAgent profile;</li>
+                    <li>extract structured information from an uploaded resume for the user to review;</li>
+                    <li>match saved information to fields on the active recruitment page;</li>
+                    <li>fill fields, continue across application pages, and stop when information is missing or final submission is reached;</li>
+                    <li>remember user-approved, non-sensitive custom answers for similar fields;</li>
+                    <li>recommend relevant jobs when the user requests that feature; and</li>
+                    <li>prevent abuse and maintain the reliability and security of the service.</li>
+                </ul>
+            </section>
+
+            <section aria-labelledby="ai-title">
+                <h2 id="ai-title">4. AI processing and service providers</h2>
+                <p>
+                    JobAgent uses configured OpenCode Go / DeepSeek AI services to provide features requested by the user. For resume extraction, the resume text is sent to the configured AI service so it can be converted into structured fields. For recruitment-form matching, the service may receive the page title, form labels, options, nearby instructions, and the names of available profile fields. It is not sent the actual values of the user's profile fields for this matching step.
+                </p>
+                <p>
+                    Information may also be processed by hosting and infrastructure providers where this is necessary to operate, secure, and deliver JobAgent. We do not authorize these providers to use JobAgent data for their own advertising or unrelated purposes.
+                </p>
+            </section>
+
+            <section aria-labelledby="local-title">
+                <h2 id="local-title">5. Browser storage and permissions</h2>
+                <p>
+                    The extension stores the configured server address, invitation-code login session, accepted disclosure version, and non-personal run state on the user's device. Resume answers and completed form values are stored on the JobAgent server rather than in Chrome local storage.
+                </p>
+                <p>
+                    Access to recruitment pages is required to read and fill form controls. Access to the JobAgent server is required to authenticate, retrieve the profile and resume selected by the user, request field-matching decisions, and fetch the resume file. JobAgent does not load or execute remote JavaScript or WebAssembly; all executable extension code is included in the published extension package.
+                </p>
+            </section>
+
+            <section aria-labelledby="retention-title">
+                <h2 id="retention-title">6. Retention, access, and deletion</h2>
+                <p>
+                    Resume files, structured profile fields, field memory, and account information are retained while the user's JobAgent account is active or as reasonably necessary to provide the service, resolve security issues, and meet legal obligations. Users can review and edit structured information through the JobAgent profile page. To request access, export, correction, or deletion, contact <a href="mailto:feng65501@gmail.com">feng65501@gmail.com</a>. We may ask for reasonable verification before acting on a request.
+                </p>
+            </section>
+
+            <section aria-labelledby="security-title">
+                <h2 id="security-title">7. Security</h2>
+                <p>
+                    Remote data is transmitted over HTTPS. Server-side session tokens are stored as hashes, and access controls and rate limiting are used to reduce unauthorized access. No online service can guarantee absolute security; users should review completed applications and avoid entering sensitive information into fields that JobAgent intentionally leaves for manual handling.
+                </p>
+            </section>
+
+            <section class="limited-use" aria-labelledby="limited-use-title">
+                <p class="legal-kicker">CHROME WEB STORE LIMITED USE</p>
+                <h2 id="limited-use-title">8. Our data-use commitments</h2>
+                <p>JobAgent's use of information received from Chrome APIs complies with the Chrome Web Store User Data Policy, including the Limited Use requirements. In particular:</p>
+                <ul>
+                    <li>We do not sell or transfer user data to third parties outside the use cases permitted by the Chrome Web Store User Data Policy.</li>
+                    <li>We do not use or transfer user data for purposes unrelated to JobAgent's single purpose.</li>
+                    <li>We do not use or transfer user data to determine creditworthiness or for lending purposes.</li>
+                </ul>
+                <p>
+                    We do not use JobAgent data for personalized, retargeted, or interest-based advertising. Human access is limited to cases permitted by the Chrome Web Store User Data Policy, such as user-authorized support, security investigation, legal compliance, or appropriately aggregated and anonymized internal operations.
+                </p>
+            </section>
+
+            <section aria-labelledby="changes-title">
+                <h2 id="changes-title">9. Changes and contact</h2>
+                <p>
+                    We may update this policy when JobAgent's features or data practices change. Material changes will be reflected on this page and, where necessary, disclosed in the extension before additional information is collected. Questions and privacy requests can be sent to <a href="mailto:feng65501@gmail.com">feng65501@gmail.com</a>.
+                </p>
+            </section>
+        </article>
+    </main>
+
+    <footer class="site-footer">
+        <div>
+            <p>© 2026 Ninghui Feng.</p>
+            <p><a href="../../">Homepage</a><span>·</span><a href="mailto:feng65501@gmail.com">Privacy contact</a></p>
+        </div>
+    </footer>
+</body>
+</html>
