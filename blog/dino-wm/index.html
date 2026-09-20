@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="从预训练视觉特征到动作规划，尽量不借助数学公式，读懂 DINO-WM 的思路与方法。">
+    <meta name="author" content="Ninghui Feng">
+    <meta name="theme-color" content="#ffffff">
+    <title>DINO-WM：我的世界模型入门笔记 · Ninghui Feng</title>
+    <link rel="canonical" href="https://feng1201.github.io/blog/dino-wm/">
+    <link rel="icon" type="image/x-icon" href="/static/assets/favicon.ico">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://feng1201.github.io/blog/dino-wm/">
+    <meta property="og:title" content="DINO-WM：我的世界模型入门笔记 · Ninghui Feng">
+    <meta property="og:description" content="从预训练视觉特征到动作规划，尽量不借助数学公式，读懂 DINO-WM 的思路与方法。">
+    <meta property="og:image" content="https://feng1201.github.io/static/assets/img/og-minimal.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta property="article:published_time" content="2026-09-20T15:49:16Z">
+    <link rel="stylesheet" href="/static/css/main.css">
+    <link rel="stylesheet" href="/static/css/blog.css">
+    <script src="/static/js/scripts.js" defer></script>
+    <script src="/static/js/blog.js" defer></script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"DINO-WM：我的世界模型入门笔记","datePublished":"2026-09-20T15:49:16Z","inLanguage":"zh-CN","author":{"@type":"Person","name":"Ninghui Feng","url":"https://feng1201.github.io/"},"mainEntityOfPage":"https://feng1201.github.io/blog/dino-wm/"}</script>
+</head>
+<body>
+    <a class="skip-link" href="#main">跳转到正文 / Skip to content</a>
+    <header class="site-header">
+        <div class="masthead">
+            <a class="site-brand" href="/#top" aria-label="Ninghui Feng's homepage">
+                <span class="brand-mark" aria-hidden="true">NF</span>
+                <span>Ninghui Feng's Homepage</span>
+            </a>
+
+            <button class="menu-button" type="button" aria-expanded="false" aria-controls="site-nav" data-menu-button>
+                <span class="menu-label">Menu</span>
+                <span class="menu-icon" aria-hidden="true"></span>
+            </button>
+
+            <nav class="site-nav" id="site-nav" aria-label="Primary navigation" data-menu>
+                <a href="/#publications">Publications</a>
+                <a href="/#experience">Experience</a>
+                <a href="/#education">Education</a>
+                <a href="/#snapshots">Snapshots of Life</a>
+                <a href="/blog/" aria-current="page">Blog</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="blog-layout reader-layout" id="main">
+        <aside class="blog-sidebar">
+            <a href="/blog/">← 全部文章 / All notes</a>
+            <p class="eyebrow">Reading notes · 2026</p>
+            <nav data-language="zh" lang="zh-CN" aria-label="文章目录"><h2>文章目录</h2><ol class="table-of-contents"><li><a href="#zh-section-1">世界模型应该做到什么</a></li><li><a href="#zh-section-2">把三条要求拆开看</a></li><li><a href="#zh-section-3">DINO-WM 的建模流程</a></li><li><a href="#zh-section-4">如何搜索动作序列</a></li></ol></nav>
+<nav data-language="en" lang="en" hidden aria-label="On this page"><h2>On this page</h2><ol class="table-of-contents"><li><a href="#en-section-1">What should a world model be able to do?</a></li><li><a href="#en-section-2">Unpacking the three requirements</a></li><li><a href="#en-section-3">How DINO-WM works</a></li><li><a href="#en-section-4">Searching for an action sequence</a></li></ol></nav>
+            <div class="sidebar-resources"><a href="https://proceedings.mlr.press/v267/zhou25t.html" target="_blank" rel="noopener noreferrer">Paper ↗</a><a href="https://dino-wm.github.io/" target="_blank" rel="noopener noreferrer">Project ↗</a></div>
+        </aside>
+        <article class="blog-main">
+            <div class="reader-toolbar">
+                <a href="/blog/">← Blog / 文章列表</a>
+                <div class="language-control"><button class="language-button" type="button" data-language-toggle aria-controls="post-zh post-en" aria-pressed="false" hidden>Trans to English</button><small class="translation-credit">translate by GPT</small></div>
+            </div>
+            <span class="screen-reader-only" role="status" aria-live="polite" data-language-status></span>
+            <header class="post-heading" data-post-heading data-language="zh" lang="zh-CN">
+                <h1>DINO-WM：我的世界模型入门笔记</h1>
+                <div class="post-meta"><span>Ninghui Feng</span><span>上传于 <time datetime="2026-09-20T15:49:16Z" title="First uploaded: 2026-09-20T15:49:16Z">2026年9月20日</time></span><span class="tag">中文原文</span></div>
+                <p class="post-deck">从预训练视觉特征到动作规划，尽量不借助数学公式，读懂 DINO-WM 的思路与方法。</p>
+            </header>
+<header class="post-heading" data-post-heading data-language="en" lang="en" hidden>
+                <h1>DINO-WM: My first notes on world models</h1>
+                <div class="post-meta"><span>Ninghui Feng</span><span>Published <time datetime="2026-09-20T15:49:16Z" title="First uploaded: 2026-09-20T15:49:16Z">September 20, 2026</time></span><span class="tag">English translation</span></div>
+                <p class="post-deck">From pretrained visual features to action planning: making sense of DINO-WM, with as little math as possible.</p>
+            </header>
+            <noscript><p class="note">当前显示中文原文。启用 JavaScript 可切换英文，或直接阅读 <a href="/blog/content/dino-wm.en.md">English translation</a>。</p></noscript>
+            <div class="post-prose" id="post-zh" data-language="zh" lang="zh-CN"><p>这篇paper算是我学习世界模型的起点了，ok 开干！</p>
+<blockquote>
+<p>(先叠个甲，很多内容是读到了就随性写下，正确性不做担保。本文的目的是尽量不涉及数学公式的前提下，把dino-wm的<strong>思路</strong>和<strong>方法</strong>讲清楚)</p>
+</blockquote>
+<p><em><strong>DINO-WM: World Models on Pre-trained Visual Features enable Zero-shot Planning, ICML 2025</strong></em></p>
+<h2 id="zh-section-1">世界模型应该做到什么</h2>
+<p>作者开头就写出了，他们认为一个真正的世界模型应该是什么样子：</p>
+<ol>
+<li>能够基于离线预收集的轨迹进行训练(感觉是最基础的,不必多说)</li>
+<li>支持测试时的行为优化(在线优化)</li>
+<li>促进任务无关的推理(泛化性)</li>
+</ol>
+<p>作者为了满足以上要求，提出了一种无需重建视觉世界即可建模视觉动态的新方法(好绕啊)。</p>
+<h2 id="zh-section-2">把三条要求拆开看</h2>
+<p>我们来一条条拆开说明：</p>
+<p>首先是第一条&quot;1) 能够基于离线预收集的轨迹进行训练&quot;,作者文章中说是利用dinov2预训练的空间Patch特征，使其能够通过预测未来Patch特征从离线行为轨迹中学习。(把dinov2看作一个预训练的视觉编码器)</p>
+<p>接着是第二条&quot;2) 支持测试时的行为优化&quot;，文章中说测试期间使用模型预测控制与推理时最优化来达成目标，而无需任何额外信息。感觉就是在测试时固定世界模型参数，只优化动作序列。</p>
+<p>最后是第三条&quot;3）促进任务无关的推理&quot;作者在6个环境上进行了zero-shot评估，涵盖非常全面，完全可以支撑这个论点。</p>
+<h2 id="zh-section-3">DINO-WM 的建模流程</h2>
+<p>作者接着在文章中定义了什么是世界模型，简单来说世界模型就是:</p>
+<p><strong>现在看到什么 + 做什么动作 → 接下来世界会变成什么样</strong></p>
+<p>文章中dino-wm具体是这样做的：  </p>
+<ol>
+<li>图片送入dinov2变为潜在特征(Observation model)  </li>
+<li>将历史特征和动作相结合预测未来的特征(Transition model)  </li>
+<li>把未来特征变为RGB 图片(Decoder model)，这一步用于可视化，不是必须的。</li>
+</ol>
+<figure><a href="/static/assets/blog/dino-wm-architecture.png" target="_blank" rel="noopener noreferrer"><img src="/static/assets/blog/dino-wm-architecture.png" alt="DINO-WM 方法图：视觉编码器、动作条件转移模型与可选解码器。" width="2232" height="723" loading="lazy" decoding="async"></a><figcaption>DINO-WM 方法图 · 点击查看大图 · 图片来自 <a href="https://proceedings.mlr.press/v267/zhou25t.html">DINO-WM</a>.</figcaption></figure>
+<p>上面是文章的方法图，左边和右边是dinov2为模型提供任务无关的状态表征。中间是Transition model使用vit架构，采用帧级注意力(当前帧只能读取过去帧，整帧所有 Patch 一起预测。其实llm也是这样，预测token时能看到之前的所有token)</p>
+<p>动作经过MLP编码后拼接到每个Patch特征中，使模型能够学习动作如何改变环境。训练是直接最小化预测dinov2特征与真实下一帧dinov2特征的MSE损失。</p>
+<h2 id="zh-section-4">如何搜索动作序列</h2>
+<p>在动作方面，作者使用MPC(Model Predictive Control模型预测控制)结合CEM(Cross-Entropy Method交叉熵方法)反复搜索动作序列，使预测最终状态尽可能接近目标状态。坦白来讲，交叉熵我是知道的，mpc让我想起来了去年火过一段时间的大模型mpc接口...</p>
+<p>不扯了，这部分我感觉是一种最优搜索方法，有点抽象。在附录中作者说CEM是从分布中采样一组动作序列，初始分布设置为高斯分布，看起来是一种随机采样方法。</p>
+<p>然后对每个采样的动作序列预测潜在空间中的结果轨迹，选择成本最低的前几个动作序列，并相应地更新分布的均值和协方差。一直这样更新循环直到满足条件或者达到迭代次数的阈值。</p>
+</div>
+<div class="post-prose" id="post-en" data-language="en" lang="en" hidden><p>This paper marks the start of my journey into world models. Okay, let&#39;s get into it!</p>
+<blockquote>
+<p>A quick disclaimer: much of this was written spontaneously as I read, so I can&#39;t guarantee that everything is correct. My aim is to explain the <strong>ideas</strong> and <strong>methods</strong> behind DINO-WM with as little math as possible.</p>
+</blockquote>
+<p><em><strong>DINO-WM: World Models on Pre-trained Visual Features enable Zero-shot Planning, ICML 2025</strong></em></p>
+<h2 id="en-section-1">What should a world model be able to do?</h2>
+<p>The authors begin by laying out what they believe a real world model should be able to do:</p>
+<ol>
+<li>Train on trajectories collected offline. This feels like the most basic requirement, so there isn&#39;t much to add.</li>
+<li>Support action optimization at test time, i.e., online optimization.</li>
+<li>Enable task-agnostic reasoning, i.e., generalization.</li>
+</ol>
+<p>To meet these requirements, they propose a new way to model visual dynamics without reconstructing the visual world. Quite a mouthful!</p>
+<h2 id="en-section-2">Unpacking the three requirements</h2>
+<p>Let&#39;s go through them one by one.</p>
+<p>First, <strong>training on trajectories collected offline</strong>. The paper uses spatial patch features from a pretrained DINOv2 model to learn from offline action trajectories by predicting future patch features. Think of DINOv2 as a pretrained visual encoder.</p>
+<p>Second, <strong>supporting action optimization at test time</strong>. The paper says it uses model predictive control and inference-time optimization to reach a goal without any extra information. My understanding is that the world model&#39;s parameters stay fixed during testing, and only the action sequence is optimized.</p>
+<p>Finally, <strong>enabling task-agnostic reasoning</strong>. The authors conduct zero-shot evaluations in six environments. The coverage is very broad, and I think it supports this claim well.</p>
+<h2 id="en-section-3">How DINO-WM works</h2>
+<p>The authors then define what a world model is. Put simply:</p>
+<p><strong>What I see now + the action I take → what the world will look like next.</strong></p>
+<p>Here is how DINO-WM does this:</p>
+<ol>
+<li>Feed an image into DINOv2 to obtain latent features — the observation model.</li>
+<li>Combine past features with actions to predict future features — the transition model.</li>
+<li>Turn future features into RGB images — the decoder model. This step is for visualization and is not required.</li>
+</ol>
+<figure><a href="/static/assets/blog/dino-wm-architecture.png" target="_blank" rel="noopener noreferrer"><img src="/static/assets/blog/dino-wm-architecture.png" alt="DINO-WM architecture: a visual encoder, an action-conditioned transition model, and an optional decoder." width="2232" height="723" loading="lazy" decoding="async"></a><figcaption>DINO-WM architecture · Open full-size image · Figure from <a href="https://proceedings.mlr.press/v267/zhou25t.html">DINO-WM</a>.</figcaption></figure>
+<p>The figure above shows the method. On the left and right, DINOv2 provides task-agnostic state representations. In the middle, the transition model uses a Vision Transformer (ViT) architecture with frame-level attention: the current frame can only read past frames, and all patches in a frame are predicted together. In a sense, large language models do something similar — when predicting a token, they can see all the preceding tokens.</p>
+<p>Actions are encoded by a multilayer perceptron (MLP) and concatenated with each patch feature, allowing the model to learn how actions change the environment. Training directly minimizes the mean squared error (MSE) between the predicted DINOv2 features and the actual DINOv2 features of the next frame.</p>
+<h2 id="en-section-4">Searching for an action sequence</h2>
+<p>For actions, the authors combine model predictive control (MPC) with the cross-entropy method (CEM), repeatedly searching for action sequences so that the predicted final state is as close to the goal state as possible. To be honest, I know cross-entropy, but “MPC” reminds me of those “MPC” interfaces for large language models that were popular for a while last year…</p>
+<p>Anyway, this part feels like an optimal-search method to me, and it is a little abstract. In the appendix, the authors explain that CEM samples a set of action sequences from a distribution, initially a Gaussian. So it looks like a random-sampling method.</p>
+<p>For each sampled action sequence, the model then predicts the resulting trajectory in latent space. The lowest-cost sequences are selected, and the distribution&#39;s mean and covariance are updated accordingly. This loop continues until the stopping condition is met or the iteration limit is reached.</p>
+</div>
+            <footer class="post-end"><a href="/blog/">← 全部文章 / All notes</a><a href="#main">回到顶部 / Back to top ↑</a></footer>
+        </article>
+    </main>
+    <footer class="site-footer"><div>
+        <p>© <span data-year>2026</span> Ninghui Feng.</p>
+        <p><a href="/">Home</a><span>·</span><a href="/blog/">Blog</a><span>·</span><a href="mailto:feng65501@gmail.com">Email</a></p>
+    </div></footer>
+</body>
+</html>

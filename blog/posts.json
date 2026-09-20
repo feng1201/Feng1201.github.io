@@ -1,0 +1,21 @@
+[
+  {
+    "slug": "dino-wm",
+    "title": {
+      "zh": "DINO-WM：我的世界模型入门笔记",
+      "en": "DINO-WM: My first notes on world models"
+    },
+    "summary": {
+      "zh": "从预训练视觉特征到动作规划，尽量不借助数学公式，读懂 DINO-WM 的思路与方法。",
+      "en": "From pretrained visual features to action planning: making sense of DINO-WM, with as little math as possible."
+    },
+    "publishedAt": "2026-09-20T15:49:16Z",
+    "publishedDate": "2026-09-20",
+    "sourceCommit": "dcfb4f689adb4c3e90a19ac3ac0a00c03d29d32f",
+    "sourceRevision": "6d373495e912c47a489b0fc633d13a2dcd937a23",
+    "sourcePath": "posts/knowledge/DINO_WM.md",
+    "tags": ["World models", "Paper notes"],
+    "paperUrl": "https://proceedings.mlr.press/v267/zhou25t.html",
+    "projectUrl": "https://dino-wm.github.io/"
+  }
+]
