@@ -117,24 +117,12 @@ export function buildPages() {
     const cards = posts.map((post) => `<article class="post-card">
             <div class="post-meta">${dateTag(post, "zh")}<span class="tag">${post.tags.map(escapeHtml).join(" · ")}</span></div>
             <h2><a href="/blog/${post.slug}/">${escapeHtml(post.title.zh)}</a></h2>
-            <p>${escapeHtml(post.summary.zh)}</p>
             <a class="read-link" href="/blog/${post.slug}/">阅读全文 <span aria-hidden="true">↗</span></a>
         </article>`).join("\n");
-    files.set("blog/index.html", page({ title: "Blog", description: "冯宁辉的论文阅读与学习笔记。Notes on papers, ideas, and things I am learning.", path: "/blog/", body: `
-    <main class="blog-layout" id="main">
-        <aside class="blog-sidebar" aria-label="About this blog">
-            <a href="/">← 返回首页 / Home</a>
-            <p class="eyebrow">A personal notebook</p>
-            <h2>Ninghui Feng</h2>
-            <p class="sidebar-description">读论文，记下思考。<br>也记录那些还没完全想明白的问题。</p>
-            <p class="sidebar-description">Written in Chinese.<br>English translations available.</p>
-        </aside>
-        <div class="blog-main">
-            <header class="blog-heading"><p class="eyebrow">Reading &amp; thinking</p><h1>Blog</h1><p>论文、想法，以及学习途中的一些记录。<br>Notes on papers, ideas, and things I am learning.</p></header>
-            <div class="archive-label"><span>全部文章 / All notes</span><span>${String(posts.length).padStart(2, "0")} ${posts.length === 1 ? "entry" : "entries"}</span></div>
-            ${cards}
-            <p class="archive-note">慢慢读，慢慢写。More notes along the way.</p>
-        </div>
+    files.set("blog/index.html", page({ title: "Blog", description: "Ninghui Feng · Blog", path: "/blog/", body: `
+    <main class="blog-archive" id="main">
+        <header class="blog-heading"><h1>Blog</h1><a href="/">← Home</a></header>
+        ${cards}
     </main>` }));
 
     for (const post of posts) {

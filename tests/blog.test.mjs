@@ -38,6 +38,20 @@ test("Every generated page is current and all local links and fragments resolve"
     }
 });
 
+test("Archive is a single-column article list without introductory or decorative copy", () => {
+    const html = pages.get("blog/index.html");
+    assert.match(html, /<main class="blog-archive" id="main">/);
+    assert.match(html, /<h1>Blog<\/h1>/);
+    assert.doesNotMatch(html, /<aside|<h2>Ninghui Feng<\/h2>|sidebar-description|archive-label|archive-note/);
+    for (const phrase of ["读论文，记下思考", "还没完全想明白", "Written in Chinese", "English translations available", "论文、想法", "Notes on papers, ideas", "A personal notebook", "Reading &amp; thinking", "慢慢读", "More notes along the way"]) {
+        assert.ok(!html.includes(phrase), `Removed text must not return: ${phrase}`);
+    }
+    assert.equal((html.match(/class="post-card"/g) || []).length, loadPosts().length);
+    assert.match(html, /2026年9月20日/);
+    assert.match(html, /World models · Paper notes/);
+    assert.match(html, /href="\/blog\/dino-wm\/"/);
+});
+
 test("Upload dates are real, stable, and explicitly rendered in both languages", () => {
     const [post] = loadPosts();
     assert.equal(post.publishedAt, "2026-09-20T15:49:16Z");
