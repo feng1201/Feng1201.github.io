@@ -4,8 +4,10 @@ This is a separate GitHub Pages section at `/blog/`, not a section appended to t
 
 ## Current post
 
-- `/blog/dino-wm/` opens the original Chinese note.
-- `/blog/dino-wm/?lang=en` opens its full GPT-generated English translation.
+- `/blog/` opens the latest published note in full in the right-hand content column. There is no article-list screen, extra click, or JavaScript redirect.
+- The header, left profile, portrait, caption, and contact links are reused from the homepage. The same `page-layout` and `profile` styles preserve their placement and sticky behavior; only the right-hand content changes. Mobile follows the homepage's responsive layout, with additional reading gutters for the article.
+- `/blog/?lang=en` opens its full GPT-generated English translation.
+- `/blog/dino-wm/` remains a working permanent link, including its `?lang=en` variant.
 - Both languages are pre-rendered. The button switches locally; no API key, visitor data, translation request, or GitHub authentication is needed.
 - `translate by GPT` identifies the translation in small text beside the button.
 - Without JavaScript, the Chinese article remains readable and a link to the English Markdown is provided.

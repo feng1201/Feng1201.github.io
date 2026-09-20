@@ -2,11 +2,13 @@ import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createRequire } from "node:module";
+import { createHash } from "node:crypto";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const require = createRequire(import.meta.url);
 const { marked, Renderer } = require("../static/js/marked.min.js");
 const origin = "https://feng1201.github.io";
+const versionedAsset = (path) => `${path}?v=${createHash("sha256").update(readFileSync(resolve(root, `.${path}`))).digest("hex").slice(0, 12)}`;
 export const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 
 function safeUrl(value) {
@@ -59,6 +61,13 @@ function navigation() {
     return header.replace(/href="#([^"]+)"/g, 'href="/#$1"').replace('href="/blog/"', 'href="/blog/" aria-current="page"');
 }
 
+function profile() {
+    const homepage = readFileSync(resolve(root, "index.html"), "utf8");
+    const sidebar = homepage.match(/        <aside class="profile" id="top">[\s\S]*?<\/aside>/)?.[0];
+    if (!sidebar) throw new Error("Homepage profile sidebar is missing");
+    return sidebar.replace('id="top"', 'id="top" lang="en"').replace(/src="static\//g, 'src="/static/');
+}
+
 function page({ title, description, path, body, article }) {
     const schema = article ? {
         "@context": "https://schema.org", "@type": "BlogPosting", headline: article.title.zh,
@@ -84,8 +93,8 @@ function page({ title, description, path, body, article }) {
     <meta property="og:image" content="${origin}/static/assets/img/og-minimal.png">
     <meta name="twitter:card" content="summary_large_image">
     ${article ? `<meta property="article:published_time" content="${article.publishedAt}">` : ""}
-    <link rel="stylesheet" href="/static/css/main.css">
-    <link rel="stylesheet" href="/static/css/blog.css">
+    <link rel="stylesheet" href="${versionedAsset("/static/css/main.css")}">
+    <link rel="stylesheet" href="${versionedAsset("/static/css/blog.css")}">
     <script src="/static/js/scripts.js" defer></script>
     ${article ? '<script src="/static/js/blog.js" defer></script>' : ""}
     ${schema ? `<script type="application/ld+json">${JSON.stringify(schema).replace(/</g, "\\u003c")}</script>` : ""}
@@ -114,45 +123,33 @@ function dateTag(post, language) {
 export function buildPages() {
     const posts = loadPosts();
     const files = new Map();
-    const cards = posts.map((post) => `<article class="post-card">
-            <div class="post-meta">${dateTag(post, "zh")}<span class="tag">${post.tags.map(escapeHtml).join(" · ")}</span></div>
-            <h2><a href="/blog/${post.slug}/">${escapeHtml(post.title.zh)}</a></h2>
-            <a class="read-link" href="/blog/${post.slug}/">阅读全文 <span aria-hidden="true">↗</span></a>
-        </article>`).join("\n");
-    files.set("blog/index.html", page({ title: "Blog", description: "Ninghui Feng · Blog", path: "/blog/", body: `
-    <main class="blog-archive" id="main">
-        <header class="blog-heading"><h1>Blog</h1><a href="/">← Home</a></header>
-        ${cards}
-    </main>` }));
+    if (!posts.length) throw new Error("The Blog entry page requires a published post");
 
     for (const post of posts) {
-        const toc = ["zh", "en"].map((lang) => `<nav data-language="${lang}" lang="${lang === "zh" ? "zh-CN" : "en"}"${lang === "en" ? " hidden" : ""} aria-label="${lang === "zh" ? "文章目录" : "On this page"}"><h2>${lang === "zh" ? "文章目录" : "On this page"}</h2><ol class="table-of-contents">${post[lang].toc.map((item) => `<li><a href="#${item.id}">${item.text}</a></li>`).join("")}</ol></nav>`).join("\n");
         const headings = ["zh", "en"].map((lang) => `<header class="post-heading" data-post-heading data-language="${lang}" lang="${lang === "zh" ? "zh-CN" : "en"}"${lang === "en" ? " hidden" : ""}>
                 <h1>${escapeHtml(post.title[lang])}</h1>
-                <div class="post-meta"><span>Ninghui Feng</span><span>${lang === "zh" ? "上传于" : "Published"} ${dateTag(post, lang)}</span><span class="tag">${lang === "zh" ? "中文原文" : "English translation"}</span></div>
+                <div class="post-meta"><span>${lang === "zh" ? "上传于" : "Published"} ${dateTag(post, lang)}</span><span class="tag">${lang === "zh" ? "中文原文" : "English translation"}</span></div>
                 <p class="post-deck">${escapeHtml(post.summary[lang])}</p>
             </header>`).join("\n");
         const contents = ["zh", "en"].map((lang) => `<div class="post-prose" id="post-${lang}" data-language="${lang}" lang="${lang === "zh" ? "zh-CN" : "en"}"${lang === "en" ? " hidden" : ""}>${post[lang].html}</div>`).join("\n");
-        files.set(`blog/${post.slug}/index.html`, page({ title: post.title.zh, description: post.summary.zh, path: `/blog/${post.slug}/`, article: post, body: `
-    <main class="blog-layout reader-layout" id="main">
-        <aside class="blog-sidebar">
-            <a href="/blog/">← 全部文章 / All notes</a>
-            <p class="eyebrow">Reading notes · 2026</p>
-            ${toc}
-            <div class="sidebar-resources"><a href="${safeUrl(post.paperUrl)}" target="_blank" rel="noopener noreferrer">Paper ↗</a><a href="${safeUrl(post.projectUrl)}" target="_blank" rel="noopener noreferrer">Project ↗</a></div>
-        </aside>
-        <article class="blog-main">
+        const renderPost = (path) => page({ title: post.title.zh, description: post.summary.zh, path, article: post, body: `
+    <main class="page-layout blog-page" id="main">
+${profile()}
+        <article class="content blog-main">
             <div class="reader-toolbar">
-                <a href="/blog/">← Blog / 文章列表</a>
+                <span class="reader-label">Blog</span>
                 <div class="language-control"><button class="language-button" type="button" data-language-toggle aria-controls="post-zh post-en" aria-pressed="false" hidden>Trans to English</button><small class="translation-credit">translate by GPT</small></div>
             </div>
             <span class="screen-reader-only" role="status" aria-live="polite" data-language-status></span>
             ${headings}
             <noscript><p class="note">当前显示中文原文。启用 JavaScript 可切换英文，或直接阅读 <a href="/blog/content/${post.slug}.en.md">English translation</a>。</p></noscript>
             ${contents}
-            <footer class="post-end"><a href="/blog/">← 全部文章 / All notes</a><a href="#main">回到顶部 / Back to top ↑</a></footer>
+            <footer class="post-end"><a href="/">← Home</a><a href="#main">回到顶部 / Back to top ↑</a></footer>
         </article>
-    </main>` }));
+    </main>` });
+        files.set(`blog/${post.slug}/index.html`, renderPost(`/blog/${post.slug}/`));
+        // The navigation entry is a complete reader, never a teaser or redirect.
+        if (post === posts[0]) files.set("blog/index.html", renderPost("/blog/"));
     }
     return files;
 }

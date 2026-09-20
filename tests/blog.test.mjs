@@ -17,7 +17,7 @@ test("Blog is a separate route immediately after Snapshots, not a home section",
     for (const html of pages.values()) {
         assert.match(html, /href="\/#snapshots"/);
         assert.match(html, /href="\/blog\/" aria-current="page"/);
-        assert.doesNotMatch(html, /class="profile"|id="publications"|id="snapshots"/);
+        assert.doesNotMatch(html, /id="publications"|id="snapshots"/);
     }
 });
 
@@ -38,18 +38,48 @@ test("Every generated page is current and all local links and fragments resolve"
     }
 });
 
-test("Archive is a single-column article list without introductory or decorative copy", () => {
+test("Blog opens the full article immediately on the right, without a list or redirect", () => {
     const html = pages.get("blog/index.html");
-    assert.match(html, /<main class="blog-archive" id="main">/);
-    assert.match(html, /<h1>Blog<\/h1>/);
-    assert.doesNotMatch(html, /<aside|<h2>Ninghui Feng<\/h2>|sidebar-description|archive-label|archive-note/);
+    assert.match(html, /<main class="page-layout blog-page" id="main">/);
+    assert.match(html, /<h1>DINO-WM：我的世界模型入门笔记<\/h1>/);
+    assert.doesNotMatch(html, /<h2>Ninghui Feng<\/h2>|sidebar-description|archive-label|archive-note|class="post-card"|阅读全文|http-equiv="refresh"|文章列表|全部文章/);
     for (const phrase of ["读论文，记下思考", "还没完全想明白", "Written in Chinese", "English translations available", "论文、想法", "Notes on papers, ideas", "A personal notebook", "Reading &amp; thinking", "慢慢读", "More notes along the way"]) {
         assert.ok(!html.includes(phrase), `Removed text must not return: ${phrase}`);
     }
-    assert.equal((html.match(/class="post-card"/g) || []).length, loadPosts().length);
     assert.match(html, /2026年9月20日/);
-    assert.match(html, /World models · Paper notes/);
-    assert.match(html, /href="\/blog\/dino-wm\/"/);
+    assert.match(html, /id="post-zh" data-language="zh" lang="zh-CN">/);
+    assert.match(html, /这篇paper算是我学习世界模型的起点了/);
+    assert.match(html, /直到满足条件或者达到迭代次数的阈值/);
+    assert.match(html, /iteration limit is reached/);
+    assert.match(html, /data-language-toggle/);
+    assert.match(html, /translate by GPT/);
+    assert.match(html, /src="\/static\/assets\/blog\/dino-wm-architecture.png"/);
+    const permalink = pages.get("blog/dino-wm/index.html");
+    const body = (value) => value.slice(value.indexOf('<div class="post-prose"'), value.indexOf('<footer class="post-end"'));
+    assert.equal(body(html), body(permalink), "Entry and permalink must contain the same complete article");
+});
+
+test("Homepage profile is reused exactly and sits before the right-hand reading column", () => {
+    const expected = read("index.html").match(/        <aside class="profile" id="top">[\s\S]*?<\/aside>/)[0]
+        .replace('id="top"', 'id="top" lang="en"').replace(/src="static\//g, 'src="/static/');
+    for (const html of pages.values()) {
+        assert.ok(html.includes(expected), "Photo, caption, identity, and contacts must match the homepage");
+        assert.match(html, /<\/aside>\s*<article class="content blog-main">/);
+        assert.equal((html.match(/class="profile"/g) || []).length, 1);
+        assert.match(html, /Taken in Haikou on New Year's Eve, welcoming 2026/);
+        assert.match(html, /mailto:Ninghui.FENG@nottingham.edu.cn/);
+    }
+});
+
+test("Reader reuses homepage spacing with additional mobile gutters; CSS revisions bypass stale browser caches", () => {
+    const css = read("static/css/blog.css");
+    assert.match(css, /\.blog-main\s*\{[^}]*max-width: 860px/);
+    assert.match(css, /\.blog-main\s*\{\s*padding-inline: 0\.5rem/);
+    assert.doesNotMatch(css, /(?:^|\n)\s*\.(?:page-layout|profile|masthead)\s*\{/);
+    for (const html of pages.values()) {
+        assert.match(html, /href="\/static\/css\/blog\.css\?v=[a-f0-9]{12}"/);
+        assert.match(html, /href="\/static\/css\/main\.css\?v=[a-f0-9]{12}"/);
+    }
 });
 
 test("Upload dates are real, stable, and explicitly rendered in both languages", () => {
@@ -141,4 +171,15 @@ test("English deep links survive refresh and unsupported languages fall back to 
     english.callbacks.popstate();
     assert.equal(english.document.documentElement.lang, "zh-CN");
     assert.equal(client("https://feng1201.github.io/blog/dino-wm/?lang=invalid").document.documentElement.lang, "zh-CN");
+});
+
+test("Language switching and English deep links also work directly on the Blog entry", () => {
+    const app = client("https://feng1201.github.io/blog/");
+    app.callbacks.click();
+    assert.equal(app.window.location.href, "https://feng1201.github.io/blog/?lang=en");
+    assert.equal(app.document.documentElement.lang, "en");
+    app.callbacks.click();
+    assert.equal(app.window.location.href, "https://feng1201.github.io/blog/");
+    assert.equal(app.document.documentElement.lang, "zh-CN");
+    assert.equal(client("https://feng1201.github.io/blog/?lang=en").document.documentElement.lang, "en");
 });
