@@ -64,7 +64,7 @@ test("Homepage profile is reused exactly and sits before the right-hand reading 
         .replace('id="top"', 'id="top" lang="en"').replace(/src="static\//g, 'src="/static/');
     for (const html of pages.values()) {
         assert.ok(html.includes(expected), "Photo, caption, identity, and contacts must match the homepage");
-        assert.match(html, /<\/aside>\s*<article class="content blog-main">/);
+        assert.match(html, /<\/aside>\s*<div class="content blog-main">/);
         assert.equal((html.match(/class="profile"/g) || []).length, 1);
         assert.match(html, /Taken in Haikou on New Year's Eve, welcoming 2026/);
         assert.match(html, /mailto:Ninghui.FENG@nottingham.edu.cn/);
@@ -79,7 +79,29 @@ test("Reader reuses homepage spacing with additional mobile gutters; CSS revisio
     for (const html of pages.values()) {
         assert.match(html, /href="\/static\/css\/blog\.css\?v=[a-f0-9]{12}"/);
         assert.match(html, /href="\/static\/css\/main\.css\?v=[a-f0-9]{12}"/);
+        assert.match(html, /src="\/static\/js\/blog\.js\?v=[a-f0-9]{12}"/);
     }
+});
+
+test("Newt follows DINO-WM in full, with its own date, figure, and language controls", () => {
+    const html = pages.get("blog/index.html");
+    assert.deepEqual(loadPosts().map((post) => post.slug), ["dino-wm", "newt"]);
+    assert.ok(html.indexOf('id="dino-wm"') < html.indexOf('id="newt"'));
+    assert.equal((html.match(/data-blog-post=/g) || []).length, 2);
+    assert.equal((html.match(/data-language-toggle /g) || []).length, 2);
+    assert.match(html, /aria-controls="newt-post-zh newt-post-en"/);
+    assert.match(html, /下面是世界模型第二篇文章/);
+    assert.match(html, /直接服务于控制/);
+    assert.match(html, /serve control tasks/);
+    assert.match(html, /2026年9月22日/);
+    assert.match(html, /September 22, 2026/);
+    const post = loadPosts().find((p) => p.slug === "newt");
+    assert.equal(post.publishedAt, "2026-09-21T16:07:29Z");
+    assert.equal(post.sourceCommit, "e0e9a2955430f75cc4b676dab612c1e3cff3fdb6");
+    const newt = pages.get("blog/newt/index.html");
+    assert.match(newt, /newt-architecture.png"[^>]+width="2168" height="842"/);
+    assert.doesNotMatch(newt, /DINO-WM 方法图|dino-wm-architecture.png/);
+    assert.equal(readFileSync(resolve(root, "static/assets/blog/newt-architecture.png")).subarray(0, 8).toString("hex"), "89504e470d0a1a0a");
 });
 
 test("Upload dates are real, stable, and explicitly rendered in both languages", () => {
@@ -116,32 +138,43 @@ test("Markdown is escaped and unsafe links are rejected", () => {
     assert.throws(() => renderMarkdown('[bad](javascript:alert%281%29)', "zh", post), /Unsupported content URL/);
 });
 
-function client(url) {
-    const callbacks = {};
-    const button = { hidden: true, textContent: "", attrs: {}, setAttribute(k, v) { this.attrs[k] = v; }, addEventListener(k, fn) { callbacks[k] = fn; } };
-    const panels = ["zh", "en"].flatMap((language) => Array.from({ length: 3 }, () => ({ dataset: { language }, hidden: language === "en" })));
-    const titles = { zh: "中文标题", en: "English title" };
-    const descriptions = { zh: "中文摘要", en: "English summary" };
-    const status = { textContent: "" };
+function client(url, slugs = ["dino-wm"]) {
+    const windowCallbacks = {};
+    const states = slugs.map((slug) => {
+        const callbacks = {};
+        const button = { hidden: true, textContent: "", attrs: {}, setAttribute(k, v) { this.attrs[k] = v; }, addEventListener(k, fn) { callbacks[k] = fn; } };
+        const panels = ["zh", "en"].flatMap((language) => Array.from({ length: 2 }, () => ({ dataset: { language }, hidden: language === "en" })));
+        const status = { textContent: "" };
+        const root = {
+            dataset: { blogPost: slug, sectionPrefix: slug === "dino-wm" ? "" : `${slug}-` },
+            attrs: {},
+            setAttribute(k, v) { this.attrs[k] = v; },
+            querySelector(selector) {
+                if (selector === "[data-language-toggle]") return button;
+                if (selector === "[data-language-status]") return status;
+                if (selector.startsWith("[data-post-heading]")) {
+                    const lang = selector.includes('"en"') ? "en" : "zh";
+                    return { querySelector: (s) => ({ textContent: s === "h1" ? (lang === "en" ? "English title" : "中文标题") : (lang === "en" ? "English summary" : "中文摘要") }) };
+                }
+                return null;
+            },
+            querySelectorAll: () => panels
+        };
+        return { root, button, panels, status, callbacks };
+    });
     const metadata = { content: "" };
     const document = {
         documentElement: { lang: "zh-CN" },
-        title: "",
+        title: "Blog · Ninghui Feng",
         querySelector(selector) {
-            if (selector === "[data-language-toggle]") return button;
-            if (selector === "[data-language-status]") return status;
             if (selector.startsWith("meta[")) return metadata;
-            if (selector.startsWith("[data-post-heading]")) {
-                const lang = selector.includes('"en"') ? "en" : "zh";
-                return { querySelector: (s) => ({ textContent: s === "h1" ? titles[lang] : descriptions[lang] }) };
-            }
             return null;
         },
-        querySelectorAll: () => panels
+        querySelectorAll: () => states.map((state) => state.root)
     };
-    const window = { location: { href: url }, history: { replaceState(_state, _title, next) { window.location.href = String(next); } }, addEventListener(k, fn) { callbacks[k] = fn; } };
+    const window = { location: { href: url }, history: { replaceState(_state, _title, next) { window.location.href = String(next); } }, addEventListener(k, fn) { windowCallbacks[k] = fn; } };
     vm.runInNewContext(read("static/js/blog.js"), { document, window, URL });
-    return { button, panels, document, window, callbacks, status };
+    return { ...states[0], entries: states, document, window, callbacks: { ...windowCallbacks, ...states[0].callbacks } };
 }
 
 test("Toggle switches all panels, title, accessibility state, and URL; then restores Chinese", () => {
@@ -173,13 +206,32 @@ test("English deep links survive refresh and unsupported languages fall back to 
     assert.equal(client("https://feng1201.github.io/blog/dino-wm/?lang=invalid").document.documentElement.lang, "zh-CN");
 });
 
-test("Language switching and English deep links also work directly on the Blog entry", () => {
-    const app = client("https://feng1201.github.io/blog/");
-    app.callbacks.click();
-    assert.equal(app.window.location.href, "https://feng1201.github.io/blog/?lang=en");
-    assert.equal(app.document.documentElement.lang, "en");
-    app.callbacks.click();
-    assert.equal(app.window.location.href, "https://feng1201.github.io/blog/");
+test("Newt translates independently without changing DINO-WM or the feed title", () => {
+    const app = client("https://feng1201.github.io/blog/#newt", ["dino-wm", "newt"]);
+    const [dino, newt] = app.entries;
+    newt.callbacks.click();
+    assert.equal(app.window.location.href, "https://feng1201.github.io/blog/?lang-newt=en#newt");
+    assert.equal(newt.button.attrs["aria-pressed"], "true");
+    assert.equal(dino.button.attrs["aria-pressed"], "false");
+    assert.ok(dino.panels.every((p) => p.hidden === (p.dataset.language === "en")));
+    assert.ok(newt.panels.every((p) => p.hidden === (p.dataset.language === "zh")));
+    assert.equal(app.document.title, "Blog · Ninghui Feng");
     assert.equal(app.document.documentElement.lang, "zh-CN");
-    assert.equal(client("https://feng1201.github.io/blog/?lang=en").document.documentElement.lang, "en");
+    const restored = client(app.window.location.href, ["dino-wm", "newt"]);
+    assert.equal(restored.entries[1].button.attrs["aria-pressed"], "true");
+    assert.equal(restored.entries[0].button.attrs["aria-pressed"], "false");
+    newt.callbacks.click();
+    assert.equal(app.window.location.href, "https://feng1201.github.io/blog/#newt");
+});
+
+test("Global English links, per-post Chinese overrides, and history restoration work together", () => {
+    const app = client("https://feng1201.github.io/blog/?lang=en#newt-en-section-4", ["dino-wm", "newt"]);
+    assert.ok(app.entries.every((e) => e.button.attrs["aria-pressed"] === "true"));
+    app.entries[1].callbacks.click();
+    assert.equal(app.window.location.href, "https://feng1201.github.io/blog/?lang=en&lang-newt=zh#newt-zh-section-4");
+    assert.equal(app.entries[0].button.attrs["aria-pressed"], "true");
+    app.window.location.href = "https://feng1201.github.io/blog/?lang=en";
+    app.callbacks.popstate();
+    assert.ok(app.entries.every((e) => e.button.attrs["aria-pressed"] === "true"));
+    assert.equal(app.document.documentElement.lang, "en");
 });

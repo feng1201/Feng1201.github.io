@@ -22,14 +22,15 @@ export function renderMarkdown(markdown, language, post) {
     const renderer = new Renderer();
     renderer.html = escapeHtml;
     renderer.heading = (text, level) => {
-        const id = `${language}-section-${toc.length + 1}`;
+        const id = `${post.slug === "dino-wm" ? "" : `${post.slug}-`}${language}-section-${toc.length + 1}`;
         toc.push({ id, text });
         return `<h${level} id="${id}">${text}</h${level}>\n`;
     };
     renderer.link = (href, title, text) => `<a href="${safeUrl(href)}"${title ? ` title="${escapeHtml(title)}"` : ""}>${text}</a>`;
     renderer.image = (href, title, text) => {
-        const caption = language === "zh" ? "DINO-WM 方法图 · 点击查看大图 · 图片来自" : "DINO-WM architecture · Open full-size image · Figure from";
-        return `<figure><a href="${safeUrl(href)}" target="_blank" rel="noopener noreferrer"><img src="${safeUrl(href)}" alt="${escapeHtml(text)}" width="2232" height="723" loading="lazy" decoding="async"></a><figcaption>${caption} <a href="${safeUrl(post.paperUrl)}">DINO-WM</a>.</figcaption></figure>`;
+        const label = escapeHtml(post.label);
+        const caption = language === "zh" ? `${label} 方法图 · 点击查看大图 · 图片来自` : `${label} architecture · Open full-size image · Figure from`;
+        return `<figure><a href="${safeUrl(href)}" target="_blank" rel="noopener noreferrer"><img src="${safeUrl(href)}" alt="${escapeHtml(text)}" width="${post.figure.width}" height="${post.figure.height}" loading="lazy" decoding="async"></a><figcaption>${caption} <a href="${safeUrl(post.paperUrl)}">${label}</a>.</figcaption></figure>`;
     };
     // Render images as figures, not invalid <p><figure> nests.
     renderer.paragraph = (text) => text.startsWith("<figure>") && text.endsWith("</figure>") ? `${text}\n` : `<p>${text}</p>\n`;
@@ -42,6 +43,7 @@ export function loadPosts() {
     for (const post of posts) {
         if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(post.slug) || slugs.has(post.slug)) throw new Error("Invalid or repeated post slug");
         slugs.add(post.slug);
+        if (!post.label || !Number.isInteger(post.figure?.width) || !Number.isInteger(post.figure?.height) || post.figure.width <= 0 || post.figure.height <= 0) throw new Error("Missing figure label or dimensions");
         if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/.test(post.publishedAt) || Number.isNaN(Date.parse(post.publishedAt))) throw new Error("Missing publication timestamp");
         const parts = new Intl.DateTimeFormat("en", { timeZone: "Asia/Shanghai", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(new Date(post.publishedAt));
         const part = (type) => parts.find((p) => p.type === type).value;
@@ -51,7 +53,8 @@ export function loadPosts() {
             post[lang] = renderMarkdown(readFileSync(resolve(root, `blog/content/${post.slug}.${lang}.md`), "utf8"), lang, post);
         }
     }
-    return posts.sort((a, b) => b.publishedAt.localeCompare(a.publishedAt));
+    // Editorial order is intentional: new notes are appended below existing ones.
+    return posts;
 }
 
 function navigation() {
@@ -68,12 +71,18 @@ function profile() {
     return sidebar.replace('id="top"', 'id="top" lang="en"').replace(/src="static\//g, 'src="/static/');
 }
 
-function page({ title, description, path, body, article }) {
+function page({ title, description, path, body, article, feedPosts }) {
     const schema = article ? {
         "@context": "https://schema.org", "@type": "BlogPosting", headline: article.title.zh,
         datePublished: article.publishedAt, inLanguage: "zh-CN",
         author: { "@type": "Person", name: "Ninghui Feng", url: `${origin}/` },
         mainEntityOfPage: `${origin}${path}`
+    } : feedPosts ? {
+        "@context": "https://schema.org", "@type": "Blog", name: "Ninghui Feng · Blog",
+        url: `${origin}/blog/`, blogPost: feedPosts.map((post) => ({
+            "@type": "BlogPosting", headline: post.title.zh, datePublished: post.publishedAt,
+            url: `${origin}/blog/${post.slug}/`, author: { "@type": "Person", name: "Ninghui Feng" }
+        }))
     } : null;
     return `<!doctype html>
 <html lang="zh-CN">
@@ -96,7 +105,7 @@ function page({ title, description, path, body, article }) {
     <link rel="stylesheet" href="${versionedAsset("/static/css/main.css")}">
     <link rel="stylesheet" href="${versionedAsset("/static/css/blog.css")}">
     <script src="/static/js/scripts.js" defer></script>
-    ${article ? '<script src="/static/js/blog.js" defer></script>' : ""}
+    ${article || feedPosts ? `<script src="${versionedAsset("/static/js/blog.js")}" defer></script>` : ""}
     ${schema ? `<script type="application/ld+json">${JSON.stringify(schema).replace(/</g, "\\u003c")}</script>` : ""}
 </head>
 <body>
@@ -109,7 +118,7 @@ ${body}
     </div></footer>
 </body>
 </html>
-`;
+`.replace(/[ \t]+$/gm, "");
 }
 
 function displayDate(post, language) {
@@ -126,31 +135,35 @@ export function buildPages() {
     if (!posts.length) throw new Error("The Blog entry page requires a published post");
 
     for (const post of posts) {
+        const prefix = post.slug === "dino-wm" ? "" : `${post.slug}-`;
         const headings = ["zh", "en"].map((lang) => `<header class="post-heading" data-post-heading data-language="${lang}" lang="${lang === "zh" ? "zh-CN" : "en"}"${lang === "en" ? " hidden" : ""}>
                 <h1>${escapeHtml(post.title[lang])}</h1>
                 <div class="post-meta"><span>${lang === "zh" ? "上传于" : "Published"} ${dateTag(post, lang)}</span><span class="tag">${lang === "zh" ? "中文原文" : "English translation"}</span></div>
                 <p class="post-deck">${escapeHtml(post.summary[lang])}</p>
             </header>`).join("\n");
-        const contents = ["zh", "en"].map((lang) => `<div class="post-prose" id="post-${lang}" data-language="${lang}" lang="${lang === "zh" ? "zh-CN" : "en"}"${lang === "en" ? " hidden" : ""}>${post[lang].html}</div>`).join("\n");
-        const renderPost = (path) => page({ title: post.title.zh, description: post.summary.zh, path, article: post, body: `
-    <main class="page-layout blog-page" id="main">
-${profile()}
-        <article class="content blog-main">
+        const contents = ["zh", "en"].map((lang) => `<div class="post-prose" id="${prefix}post-${lang}" data-language="${lang}" lang="${lang === "zh" ? "zh-CN" : "en"}"${lang === "en" ? " hidden" : ""}>${post[lang].html}</div>`).join("\n");
+        post.reader = `<article class="blog-post" id="${post.slug}" data-blog-post="${post.slug}" data-section-prefix="${prefix}">
             <div class="reader-toolbar">
-                <span class="reader-label">Blog</span>
-                <div class="language-control"><button class="language-button" type="button" data-language-toggle aria-controls="post-zh post-en" aria-pressed="false" hidden>Trans to English</button><small class="translation-credit">translate by GPT</small></div>
+                <span class="reader-label">${escapeHtml(post.label)}</span>
+                <div class="language-control"><button class="language-button" type="button" data-language-toggle aria-controls="${prefix}post-zh ${prefix}post-en" aria-pressed="false" hidden>Trans to English</button><small class="translation-credit">translate by GPT</small></div>
             </div>
             <span class="screen-reader-only" role="status" aria-live="polite" data-language-status></span>
             ${headings}
             <noscript><p class="note">当前显示中文原文。启用 JavaScript 可切换英文，或直接阅读 <a href="/blog/content/${post.slug}.en.md">English translation</a>。</p></noscript>
             ${contents}
-            <footer class="post-end"><a href="/">← Home</a><a href="#main">回到顶部 / Back to top ↑</a></footer>
-        </article>
-    </main>` });
-        files.set(`blog/${post.slug}/index.html`, renderPost(`/blog/${post.slug}/`));
-        // The navigation entry is a complete reader, never a teaser or redirect.
-        if (post === posts[0]) files.set("blog/index.html", renderPost("/blog/"));
+            <footer class="post-end"><a href="/blog/${post.slug}/">独立链接 / Permalink</a><a href="#${post.slug}">回到本文顶部 / Back to top ↑</a></footer>
+        </article>`;
+        files.set(`blog/${post.slug}/index.html`, page({ title: post.title.zh, description: post.summary.zh, path: `/blog/${post.slug}/`, article: post, body: `
+    <main class="page-layout blog-page" id="main">
+${profile()}
+        <div class="content blog-main">${post.reader}</div>
+    </main>` }));
     }
+    files.set("blog/index.html", page({ title: "Blog", description: "Ninghui Feng · Blog", path: "/blog/", feedPosts: posts, body: `
+    <main class="page-layout blog-page" id="main">
+${profile()}
+        <div class="content blog-main">${posts.map((post) => post.reader).join("\n")}</div>
+    </main>` }));
     return files;
 }
 

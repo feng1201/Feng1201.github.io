@@ -1,6 +1,8 @@
 [
   {
     "slug": "dino-wm",
+    "label": "DINO-WM",
+    "figure": {"width": 2232, "height": 723},
     "title": {
       "zh": "DINO-WM：我的世界模型入门笔记",
       "en": "DINO-WM: My first notes on world models"
@@ -17,5 +19,26 @@
     "tags": ["World models", "Paper notes"],
     "paperUrl": "https://proceedings.mlr.press/v267/zhou25t.html",
     "projectUrl": "https://dino-wm.github.io/"
+  },
+  {
+    "slug": "newt",
+    "label": "Newt",
+    "figure": {"width": 2168, "height": 842},
+    "title": {
+      "zh": "Newt：多任务世界模型阅读笔记",
+      "en": "Newt: Reading notes on multitask world models"
+    },
+    "summary": {
+      "zh": "从专家示范预训练到在线交互，记录 Newt 如何在潜在空间学习动力学、奖励与价值，并与 DINO-WM 作比较。",
+      "en": "From demonstration pretraining to online interaction: how Newt learns latent dynamics, rewards, and values, and how it compares with DINO-WM."
+    },
+    "publishedAt": "2026-09-21T16:07:29Z",
+    "publishedDate": "2026-09-22",
+    "sourceCommit": "e0e9a2955430f75cc4b676dab612c1e3cff3fdb6",
+    "sourceRevision": "6bcc4b4a8f35c0ef9ab249d649aff229f8678aaa",
+    "sourcePath": "posts/knowledge/Newt.md",
+    "tags": ["World models", "Paper notes"],
+    "paperUrl": "https://arxiv.org/abs/2511.19584",
+    "projectUrl": "https://www.nicklashansen.com/NewtWM"
   }
 ]
