@@ -17,10 +17,10 @@
     <meta name="twitter:card" content="summary_large_image">
 
     <link rel="stylesheet" href="/static/css/main.css?v=37f4bd85a142">
-    <link rel="stylesheet" href="/static/css/blog.css?v=0af493f5c1ea">
+    <link rel="stylesheet" href="/static/css/blog.css?v=1993c478c3de">
     <script src="/static/js/scripts.js" defer></script>
     <script src="/static/js/blog.js?v=6386c287fc0e" defer></script>
-    <script type="application/ld+json">{"@context":"https://schema.org","@type":"Blog","name":"Ninghui Feng · Blog","url":"https://feng1201.github.io/blog/","blogPost":[{"@type":"BlogPosting","headline":"DINO-WM：我的世界模型入门笔记","datePublished":"2026-09-20T15:49:16Z","url":"https://feng1201.github.io/blog/dino-wm/","author":{"@type":"Person","name":"Ninghui Feng"}},{"@type":"BlogPosting","headline":"Newt：多任务世界模型阅读笔记","datePublished":"2026-09-21T16:07:29Z","url":"https://feng1201.github.io/blog/newt/","author":{"@type":"Person","name":"Ninghui Feng"}}]}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"Blog","name":"Ninghui Feng · Blog","url":"https://feng1201.github.io/blog/","blogPost":[{"@type":"BlogPosting","headline":"DINO-WM：我的世界模型入门笔记","datePublished":"2026-09-20T15:49:16Z","url":"https://feng1201.github.io/blog/dino-wm/","author":{"@type":"Person","name":"Ninghui Feng"}},{"@type":"BlogPosting","headline":"Newt：多任务世界模型阅读笔记","datePublished":"2026-09-21T16:07:29Z","url":"https://feng1201.github.io/blog/newt/","author":{"@type":"Person","name":"Ninghui Feng"}},{"@type":"BlogPosting","headline":"TAWM：让世界模型知道“这一步有多长”","datePublished":"2026-10-09T03:52:30Z","url":"https://feng1201.github.io/blog/tawm/","author":{"@type":"Person","name":"Ninghui Feng"}}]}</script>
 </head>
 <body>
     <a class="skip-link" href="#main">跳转到正文 / Skip to content</a>
@@ -259,6 +259,102 @@
 <p>Overall, Newt, like DINO-WM, chooses to predict the future in latent space. It seems latent space is the right direction for now. The difference is that Newt also explicitly learns rewards and values, directly adopting a reinforcement-learning control framework to serve control tasks.</p>
 </div>
             <footer class="post-end"><a href="/blog/newt/">独立链接 / Permalink</a><a href="#newt">回到本文顶部 / Back to top ↑</a></footer>
+        </article>
+<article class="blog-post" id="tawm" data-blog-post="tawm" data-section-prefix="tawm-">
+            <div class="reader-toolbar">
+                <span class="reader-label">TAWM</span>
+                <div class="language-control"><button class="language-button" type="button" data-language-toggle aria-controls="tawm-post-zh tawm-post-en" aria-pressed="false" hidden>Trans to English</button><small class="translation-credit">translate by GPT</small></div>
+            </div>
+            <span class="screen-reader-only" role="status" aria-live="polite" data-language-status></span>
+            <header class="post-heading" data-post-heading data-language="zh" lang="zh-CN">
+                <h1>TAWM：让世界模型知道“这一步有多长”</h1>
+                <div class="post-meta"><span>上传于 <time datetime="2026-10-09T03:52:30Z" title="First uploaded: 2026-10-09T03:52:30Z">2026年10月9日</time></span><span class="tag">中文原文</span></div>
+                <p class="post-deck">从实习中的视频时间控制问题出发，读一篇让世界模型显式感知时间间隔的论文。</p>
+            </header>
+<header class="post-heading" data-post-heading data-language="en" lang="en" hidden>
+                <h1>TAWM: Teaching world models how long a step lasts</h1>
+                <div class="post-meta"><span>Published <time datetime="2026-10-09T03:52:30Z" title="First uploaded: 2026-10-09T03:52:30Z">October 9, 2026</time></span><span class="tag">English translation</span></div>
+                <p class="post-deck">Starting from a video-timing problem at my internship, a look at world models that explicitly account for time intervals.</p>
+            </header>
+            <noscript><p class="note">当前显示中文原文。启用 JavaScript 可切换英文，或直接阅读 <a href="/blog/content/tawm.en.md">English translation</a>。</p></noscript>
+            <div class="post-prose" id="tawm-post-zh" data-language="zh" lang="zh-CN"><p>最近实习比较忙，有些文章看了没及时整理（找补忏悔 ing）。这次来看世界模型的第三篇笔记。</p>
+<p>论文是 <a href="https://proceedings.mlr.press/v267/nhu25a.html">Time-Aware World Model for Adaptive Prediction and Control</a>，发表于 2025 年国际机器学习大会（International Conference on Machine Learning，ICML）。</p>
+<h2 id="tawm-zh-section-1">实习中的问题</h2>
+<p>之所以选这篇文章，是因为我最近在实习里用 Seedance 做视频生成，碰到了一些和时间有关的问题。能指定视频总时长，和能让动作严格发生在指定时间，其实是两回事。</p>
+<p>比如“2.3 秒内拿起杯子”。实际使用时，这类细粒度的时间要求依然很难被严格遵守。所以我想看看：世界模型会怎么处理“时间”这件事？</p>
+<h2 id="tawm-zh-section-2">论文想解决什么</h2>
+<p>世界模型（World Model）可以直观理解为：在内部预测“现在做这个动作，接下来会发生什么”。作者指出，传统方法通常在固定时间间隔下训练，因此可能适应了训练时的观测频率，却不适应部署时的另一种频率。</p>
+<p>论文引言举了一个例子：训练时每隔 2.5 毫秒观察一次环境，部署时却每隔 20 毫秒才能获得一次观测。虽然都叫“预测下一步”，这两步实际对应的时间跨度并不一样。</p>
+<p>某种程度上，可以把它理解为时间间隔上的分布变化。不过要注意：这是用来说明固定步长训练局限的例子，不是说本文模型只在 2.5 毫秒上训练。</p>
+<p>文章的问题可以概括为：在不增加训练样本数量和训练步数的情况下，能不能让同一个世界模型学习不同时间尺度上的动态，并支持不同观测频率下的控制？</p>
+<p>为此，作者提出时间感知世界模型（Time-Aware World Model，TAWM）。直觉很简单：不要让模型猜“下一步到底有多长”，直接把这段时间告诉它。</p>
+<h2 id="tawm-zh-section-3">方法图解</h2>
+<figure><a href="/static/assets/blog/tawm-architecture.png" target="_blank" rel="noopener noreferrer"><img src="/static/assets/blog/tawm-architecture.png" alt="TAWM 方法图：观测经编码器得到潜在状态，与动作、时间间隔一起输入时间感知模型，预测奖励、价值、候选动作和未来状态。" width="1375" height="419" loading="lazy" decoding="async"></a><figcaption>TAWM 方法图 · 点击查看大图 · 图片来自 <a href="https://proceedings.mlr.press/v267/nhu25a.html">TAWM</a>.</figcaption></figure>
+<p>左边的 oₜ 是当前时刻的观测，比如机械臂看到的画面。经过编码器 h，它被转换成潜在状态 zₜ，也就是模型内部对当前环境的表示。后面的预测都在这个表示空间中进行。</p>
+<p>中间的 M 代表时间感知模型，包含动力学、奖励、价值和策略先验等子模型。分别可以理解为：环境怎么变化、当前能得到什么回报、长期来看值不值得，以及哪些动作比较值得尝试。</p>
+<p>图中汇入模型的信息有三类：zₜ 是当前状态，aₜ 是当前动作，Δt 是这一步经过的时间。相比只根据状态和动作预测固定的“下一步”，TAWM 把时间间隔也作为明确条件。</p>
+<p>例如，同样的状态和动作，当 Δt 分别为 10 毫秒和 50 毫秒时，模型需要预测两个不同时间跨度下的结果。编码器本身不需要时间条件，其余上述子模型则显式接收它。</p>
+<p>下方橙色路径对应未来状态预测。模型先学习潜在状态的变化率，再通过数值积分（Numerical Integration，也就是把变化率累积成一段时间内的变化），更新当前状态。图里的两种更新方式是 Euler 和 RK4。</p>
+<blockquote>
+<p>补充一下这两个名字，跳过也不影响继续往下读。</p>
+<p>Euler 是欧拉法（Euler method）。直观理解是：下一状态 ≈ 当前状态 ＋ 当前变化率 × 时间间隔。</p>
+<p>RK4 是四阶龙格–库塔法（Fourth-order Runge–Kutta，第一次听说，名字还挺酷）。它会估计起点、两个中间试探状态和末端试探状态的变化率，再按规定权重合并。</p>
+<p>相当于欧拉法只看开始时的变化趋势，RK4 还会探一下中间和末端的趋势。不过这里算的是潜在状态的变化率，不一定是物理意义上的速度或加速度，也不需要真的观察到那些未来状态。</p>
+<p>上面的欧拉公式只是直觉示意。论文实际使用经过对数缩放的时间因子 τ(Δt)，而不是直接乘原始时间间隔，以稳定训练。</p>
+</blockquote>
+<p>更新后得到的 ẑ(t + Δt)，就是模型预测的、经过这段时间后的状态。橙色旁路表示当前状态会直接参与更新：在原来的状态上，加上模型估计的变化。</p>
+<p>最右边带帽子的 r、q、a，分别对应预测奖励、长期价值和策略先验给出的候选动作。后续还要通过规划，比较动作带来的预计回报，再决定执行什么。</p>
+<p>还有一个很重要的点：不只是给模型多加一个时间输入，训练时也要让它见到不同时间间隔。作者会在每轮环境交互开始时抽取一个间隔，并在这一轮里保持不变。</p>
+<p>比如在 Meta-World 这个机械臂任务测试环境中，TAWM 混合使用 1–50 毫秒的间隔训练。这样，时间条件才有对应的训练数据，而不是只在部署时突然改变它。</p>
+<p>作者的对比里，Euler 在多数 Meta-World 任务中表现更好；涉及偏微分方程（Partial Differential Equation，PDE，这里用于描述一个量随空间和时间的变化）的控制任务中，RK4 的收益则随任务和时间间隔而变化，并不是始终更好。</p>
+<p>这里“相同训练样本数和训练步数”也不等于“相同实际耗时”：RK4 的更新需要更多模型计算。</p>
+<h2 id="tawm-zh-section-4">我的看法</h2>
+<p>基本这篇文章就到这里了。相对来说，感觉没有前两篇那么“惊艳”，但问题更具体，也更贴近我实际工程中碰到的困惑。</p>
+<p>不过，读到后面发现，好像还是没有直接解决我遇到的问题（笑）。TAWM 主要回答的是“过了这么久以后，环境会变成什么样，以及应该怎么控制”；我想问的却是“能不能让生成视频里的动作，按指定时间发生”。</p>
+<p>两者都和时间有关，但不是同一个问题。这篇论文没有直接验证视频生成里的动作时间约束。对我来说，它更像一个提醒：如果希望模型认真对待时间，训练数据和模型的条件输入里，也应该认真对待时间。</p>
+<p>论文和演示可以在<a href="https://anh-nn01.github.io/time-aware-world-models/">作者项目页</a>查看。</p>
+</div>
+<div class="post-prose" id="tawm-post-en" data-language="en" lang="en" hidden><p>My internship has kept me busy, and some papers I read never made it into written notes. Consider this a little overdue catching up (and confession). Here is my third note on world models.</p>
+<p>The paper is <a href="https://proceedings.mlr.press/v267/nhu25a.html">Time-Aware World Model for Adaptive Prediction and Control</a>, published at the 2025 International Conference on Machine Learning (ICML).</p>
+<h2 id="tawm-en-section-1">A problem from my internship</h2>
+<p>I picked this paper because of a timing problem I encountered while using Seedance for video generation at work. Specifying a video&#39;s total duration and making an action happen at a precise time are two different things.</p>
+<p>Take “pick up the cup within 2.3 seconds.” In practice, these fine-grained timing instructions have been difficult to enforce. That made me wonder: how do world models deal with time?</p>
+<h2 id="tawm-en-section-2">The paper&#39;s question</h2>
+<p>A world model predicts, internally, “if I take this action now, what happens next?” The authors point out that conventional methods are often trained with a fixed interval between observations.</p>
+<p>A model may therefore adapt to its training observation frequency but struggle with a different one at deployment.</p>
+<p>The introduction gives an example: observations arrive every 2.5 milliseconds during training, but only every 20 milliseconds at deployment. Both predictions are called “the next step,” yet they cover different amounts of time.</p>
+<p>In a sense, this is a shift in the distribution of time intervals. But this example illustrates the limitation of fixed-step training; it does not mean the proposed model was trained only at 2.5 milliseconds.</p>
+<p>The question is: without increasing the number of training samples or training steps, can one world model learn dynamics at different timescales and support control at different observation frequencies?</p>
+<p>The authors propose a Time-Aware World Model (TAWM). The intuition is simple: instead of making the model guess how long “the next step” is, tell it explicitly.</p>
+<h2 id="tawm-en-section-3">Reading the method figure</h2>
+<figure><a href="/static/assets/blog/tawm-architecture.png" target="_blank" rel="noopener noreferrer"><img src="/static/assets/blog/tawm-architecture.png" alt="TAWM architecture: an encoder maps observations to latent states; time-aware models use the state, action, and time interval to predict rewards, values, candidate actions, and future states." width="1375" height="419" loading="lazy" decoding="async"></a><figcaption>TAWM architecture · Open full-size image · Figure from <a href="https://proceedings.mlr.press/v267/nhu25a.html">TAWM</a>.</figcaption></figure>
+<p>On the left, oₜ is the current observation, such as the view from a robot arm. Encoder h turns it into a latent state zₜ: the model&#39;s internal representation of the current environment. Predictions are made in this representation space.</p>
+<p>The central M contains time-aware dynamics, reward, value, and policy-prior models. Roughly: how the environment changes, what immediate reward an action brings, whether it pays off in the long run, and which actions are worth trying.</p>
+<p>Three kinds of information enter the model in the diagram: zₜ, the current state; aₜ, the current action; and Δt, the elapsed time for this step. TAWM explicitly conditions its predictions on the time interval.</p>
+<p>For the same state and action, Δt values of 10 and 50 milliseconds call for predictions over different durations. The encoder itself does not need this time condition; the other submodels listed above do receive it.</p>
+<p>The orange path predicts the future state. The model learns a rate of change in latent space, then uses numerical integration—accumulating that rate into a change over time—to update the state. The figure shows Euler and RK4 updates.</p>
+<blockquote>
+<p>A quick aside on those two names; feel free to skip it and keep reading.</p>
+<p>Euler refers to the Euler method. The intuition is: next state ≈ current state + current rate of change × time interval.</p>
+<p>RK4 is the fourth-order Runge–Kutta method. This was my first encounter with the name, which sounds rather cool. It estimates rates at the start, two trial midpoint states, and a trial endpoint, then combines them with prescribed weights.</p>
+<p>Euler looks at the initial trend; RK4 also probes intermediate and endpoint trends. These are rates of change of a latent state, not necessarily physical velocity or acceleration. The method does not require real future observations.</p>
+<p>The Euler expression above is only an intuitive sketch. The paper actually uses a logarithmically scaled time factor, τ(Δt), rather than multiplying by the raw interval, to stabilize training.</p>
+</blockquote>
+<p>The updated ẑ(t + Δt) is the predicted state after that interval. The orange bypass means the current state participates directly in the update: add the estimated change to the starting state.</p>
+<p>On the right, the hatted r, q, and a represent predicted reward, long-term value, and candidate actions from the policy prior. Planning then compares the expected returns of actions before choosing what to execute.</p>
+<p>One more important point: adding a time input is not enough. Training also exposes the model to different intervals. An interval is sampled at the start of each episode of environment interaction and stays fixed within that episode.</p>
+<p>For example, in Meta-World, a robot-arm task environment, TAWM trains with a mixture of intervals from 1 to 50 milliseconds. The time condition therefore has corresponding training data; it is not suddenly changed only at deployment.</p>
+<p>In the authors&#39; comparisons, Euler performs better on most Meta-World tasks. For control tasks involving partial differential equations (PDEs), RK4&#39;s benefit depends on the task and interval.</p>
+<p>Here, these equations describe how a quantity changes across space and time.</p>
+<p>Neither method is always better. Also, equal sample counts and training steps do not imply equal wall-clock time: RK4 updates require more model computation.</p>
+<h2 id="tawm-en-section-4">My take</h2>
+<p>That is roughly it for this paper. It felt less “wow” than the previous two, but its question is more concrete and closer to a difficulty I have actually encountered in engineering work.</p>
+<p>Although, by the end, I realized it still had not directly solved my problem (ha). TAWM mainly asks what the environment will look like after a given interval, and how to control it.</p>
+<p>My question is different: can an action in a generated video happen at a specified time? Both involve time, but they are not the same problem. This paper does not directly test action-timing constraints in video generation.</p>
+<p>For me, it is more of a reminder: if we want a model to take time seriously, its training data and conditioning inputs should take time seriously too.</p>
+<p>The paper and demonstrations are available on the <a href="https://anh-nn01.github.io/time-aware-world-models/">authors&#39; project page</a>.</p>
+</div>
+            <footer class="post-end"><a href="/blog/tawm/">独立链接 / Permalink</a><a href="#tawm">回到本文顶部 / Back to top ↑</a></footer>
         </article></div>
     </main>
     <footer class="site-footer"><div>

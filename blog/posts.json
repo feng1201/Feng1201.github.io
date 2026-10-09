@@ -40,5 +40,23 @@
     "tags": ["World models", "Paper notes"],
     "paperUrl": "https://arxiv.org/abs/2511.19584",
     "projectUrl": "https://www.nicklashansen.com/NewtWM"
+  },
+  {
+    "slug": "tawm",
+    "label": "TAWM",
+    "figure": {"width": 1375, "height": 419},
+    "title": {
+      "zh": "TAWM：让世界模型知道“这一步有多长”",
+      "en": "TAWM: Teaching world models how long a step lasts"
+    },
+    "summary": {
+      "zh": "从实习中的视频时间控制问题出发，读一篇让世界模型显式感知时间间隔的论文。",
+      "en": "Starting from a video-timing problem at my internship, a look at world models that explicitly account for time intervals."
+    },
+    "publishedAt": "2026-10-09T03:52:30Z",
+    "publishedDate": "2026-10-09",
+    "tags": ["World models", "Paper notes"],
+    "paperUrl": "https://proceedings.mlr.press/v267/nhu25a.html",
+    "projectUrl": "https://anh-nn01.github.io/time-aware-world-models/"
   }
 ]

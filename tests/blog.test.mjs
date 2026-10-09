@@ -85,10 +85,10 @@ test("Reader reuses homepage spacing with additional mobile gutters; CSS revisio
 
 test("Newt follows DINO-WM in full, with its own date, figure, and language controls", () => {
     const html = pages.get("blog/index.html");
-    assert.deepEqual(loadPosts().map((post) => post.slug), ["dino-wm", "newt"]);
+    assert.deepEqual(loadPosts().map((post) => post.slug), ["dino-wm", "newt", "tawm"]);
     assert.ok(html.indexOf('id="dino-wm"') < html.indexOf('id="newt"'));
-    assert.equal((html.match(/data-blog-post=/g) || []).length, 2);
-    assert.equal((html.match(/data-language-toggle /g) || []).length, 2);
+    assert.equal((html.match(/data-blog-post=/g) || []).length, 3);
+    assert.equal((html.match(/data-language-toggle /g) || []).length, 3);
     assert.match(html, /aria-controls="newt-post-zh newt-post-en"/);
     assert.match(html, /下面是世界模型第二篇文章/);
     assert.match(html, /直接服务于控制/);
@@ -113,6 +113,42 @@ test("Upload dates are real, stable, and explicitly rendered in both languages",
     assert.match(html, /2026年9月20日/);
     assert.match(html, /September 20, 2026/);
     assert.match(html, /"datePublished":"2026-09-20T15:49:16Z"/);
+});
+
+test("TAWM is appended in full with four sections, a local credited figure, and a stable date", () => {
+    const feed = pages.get("blog/index.html");
+    const page = pages.get("blog/tawm/index.html");
+    const post = loadPosts().find((p) => p.slug === "tawm");
+    assert.ok(feed.indexOf('id="newt"') < feed.indexOf('id="tawm"'));
+    assert.equal(post.publishedAt, "2026-10-09T03:52:30Z");
+    assert.equal(post.publishedDate, "2026-10-09");
+    const article = (html) => html.match(/<article class="blog-post" id="tawm"[\s\S]*?<\/article>/)?.[0];
+    assert.ok(article(feed));
+    assert.equal(article(feed), article(page));
+    for (const lang of ["zh", "en"]) {
+        assert.equal(post[lang].toc.length, 4);
+        assert.equal((post[lang].html.match(/<blockquote>/g) || []).length, 1);
+        assert.match(post[lang].html, /TAWM|Time-Aware World Model/);
+        assert.match(post[lang].html, /Euler/);
+        assert.match(post[lang].html, /RK4/);
+        assert.match(post[lang].html, /τ\(Δt\)/);
+    }
+    assert.match(page, /2026年10月9日/);
+    assert.match(page, /October 9, 2026/);
+    assert.match(page, /tawm-architecture.png"[^>]+width="1375" height="419"/);
+    assert.match(page, /图片来自 <a href="https:\/\/proceedings.mlr.press\/v267\/nhu25a.html">TAWM/);
+    assert.match(page, /aria-controls="tawm-post-zh tawm-post-en"/);
+    assert.equal(readFileSync(resolve(root, "static/assets/blog/tawm-architecture.png")).subarray(0, 8).toString("hex"), "89504e470d0a1a0a");
+});
+
+test("Supplementary integration notes are smaller and italic only within TAWM", () => {
+    const css = read("static/css/blog.css");
+    const rule = css.match(/\[data-blog-post="tawm"\] \.post-prose blockquote \{([^}]+)\}/)?.[1];
+    assert.ok(rule);
+    assert.match(rule, /font-size: 0\.9em/);
+    assert.match(rule, /font-style: italic/);
+    assert.match(rule, /background: transparent/);
+    assert.doesNotMatch(css.match(/(?:^|\n)\.post-prose blockquote \{([^}]+)\}/)?.[1] || "", /font-style: italic/);
 });
 
 test("Full translations and the original local figure work without external services", () => {
@@ -234,4 +270,17 @@ test("Global English links, per-post Chinese overrides, and history restoration 
     app.callbacks.popstate();
     assert.ok(app.entries.every((e) => e.button.attrs["aria-pressed"] === "true"));
     assert.equal(app.document.documentElement.lang, "en");
+});
+
+test("TAWM language switching preserves the two existing notes and survives refresh", () => {
+    const slugs = ["dino-wm", "newt", "tawm"];
+    const app = client("https://feng1201.github.io/blog/#tawm-zh-section-3", slugs);
+    app.entries[2].callbacks.click();
+    assert.equal(app.window.location.href, "https://feng1201.github.io/blog/?lang-tawm=en#tawm-en-section-3");
+    assert.deepEqual(app.entries.map((entry) => entry.button.attrs["aria-pressed"]), ["false", "false", "true"]);
+    assert.deepEqual(client(app.window.location.href, slugs).entries.map((entry) => entry.button.attrs["aria-pressed"]), ["false", "false", "true"]);
+    const english = client("https://feng1201.github.io/blog/tawm/?lang=en", ["tawm"]);
+    assert.equal(english.document.documentElement.lang, "en");
+    english.callbacks.click();
+    assert.equal(english.window.location.href, "https://feng1201.github.io/blog/tawm/");
 });

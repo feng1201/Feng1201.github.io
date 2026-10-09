@@ -30,6 +30,10 @@
 .post-prose li { margin-bottom: 0.45rem; padding-left: 0.15rem; }
 .post-prose blockquote { margin: 1.6rem 0; padding: 0.9rem 1.2rem; border-left: 3px solid #55a9c5; background: var(--soft-blue); color: #52666e; font-size: 0.9em; }
 .post-prose blockquote p:last-child { margin-bottom: 0; }
+/* TAWM's integration explanation is optional reading, not a prominent callout. */
+[data-blog-post="tawm"] .post-prose blockquote { padding: 0.1rem 0 0.1rem 1rem; border-left: 2px solid var(--line); background: transparent; color: #59636b; font-size: 0.9em; font-style: italic; line-height: 1.9; }
+[data-blog-post="tawm"] .post-prose blockquote p { margin-bottom: 0.8rem; }
+[data-blog-post="tawm"] .post-prose blockquote p:last-child { margin-bottom: 0; }
 .post-prose figure { margin: 2rem 0; padding: 0.8rem; border: 1px solid var(--line); border-radius: 4px; }
 .post-prose figure a { display: block; }
 .post-prose img { width: 100%; height: auto; display: block; }
